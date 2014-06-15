@@ -6,9 +6,21 @@ This assignment investigates data on the number of walking steps taken by a pers
 
 The following packages are useful for this investigation:
 
-```{r}
+
+```r
 require(timeDate)
+```
+
+```
+## Loading required package: timeDate
+```
+
+```r
 require(lattice)
+```
+
+```
+## Loading required package: lattice
 ```
 
 
@@ -16,7 +28,8 @@ require(lattice)
 
 The activity data is then read into R, and a clean data set is created with null values removed. For convenience the date is converted to the R date data type:
 
-```{r}
+
+```r
 data<-read.csv("activity.csv")
 data$date<-as.Date(data$date)
 good<-complete.cases(data)
@@ -28,31 +41,37 @@ cleandata<-data[good,]
 
 Next a histogram of the total daily number of steps taken is created:
 
-```{r}
+
+```r
 dailysum<-do.call(rbind,as.list(sapply(split(cleandata$steps,cleandata$date),sum)))
 hist(as.numeric(dailysum),breaks=100,main=("Histogram of daily total number of steps taken"),ylab="frequency",xlab="daily total steps")
 ```
 
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
+
 The mean daily total number of steps is then calculated:
 
-```{r }
+
+```r
 meansteps<-mean(as.numeric(dailysum))
 ```
 
-The mean total daily steps is `r meansteps`.
+The mean total daily steps is 1.0766 &times; 10<sup>4</sup>.
 
 And then the median is calculated:
 
-```{r }
+
+```r
 mediansteps<-median(as.numeric(dailysum))
 ```
 
-The median total daily steps is `r mediansteps`.
+The median total daily steps is 1.0765 &times; 10<sup>4</sup>.
 
 ## What is the average daily activity pattern?
 The mean number of steps on each five minute interval of the day is then plotted:
 
-```{r}
+
+```r
 intervals<-data.frame(unique(cleandata$interval))
 colnames(intervals)<-"interval"
 
@@ -63,28 +82,33 @@ fiveminutedf<-cbind(intervals,fiveminutemean)
 plot(fiveminutedf[[1]],fiveminutedf[[2]],type="l",main="Average steps each five minute interval",xlab="5 minute interval",ylab="Mean steps")
 ```
 
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6.png) 
+
 The five minute interval that on average had the most number of steps was then calculated:
 
-```{r}
+
+```r
 maxinterval<-fiveminutedf[which.max(fiveminutedf[,2]),]
 ```
 
-The daily five minute interval with the highest average number of steps is at 0`r maxinterval[1,1]` hours.
+The daily five minute interval with the highest average number of steps is at 0835 hours.
 
 ## Imputing missing values
 The activity data has the following amount of missing observations:
 
-```{r}
+
+```r
 missingna<-length(which(is.na(data$steps)))
 ```
 
-The number of missing observations is `r missingna`.
+The number of missing observations is 2304.
 
 A strategy to deal with missing values was then considered:
 
 The missing data was replaced with imputed values, using the mean average previously calculated for that five minute interval:
 
-```{r}
+
+```r
 dataimputed<-data
 dataimputed<-cbind(dataimputed,fiveminutedf$fiveminutemean)
 dataimputed$steps<-replace(dataimputed$steps,is.na(dataimputed$steps),fiveminutedf$fiveminutemean)
@@ -94,29 +118,35 @@ dailysumimputed<-do.call(rbind,as.list(sapply(split(dataimputed$steps,dataimpute
 
 A new histogram of the daily total was then calculated:
 
-```{r}
+
+```r
 hist(as.numeric(dailysumimputed),breaks=100,main=("Daily steps taken WITH imputed values for missing obs"),ylab="frequency",xlab="daily total steps")
 ```
 
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10.png) 
+
 The mean and median daily total number of steps, including the imputed values is then calculated. Imputing the missing values by applying the five minute means pushes the daily median towards the daily mean:
 
-```{r}
+
+```r
 meanstepsimputed<-mean(as.numeric(dailysumimputed))
 ```
 
-The revised mean daily total is `r meanstepsimputed`.
+The revised mean daily total is 1.0766 &times; 10<sup>4</sup>.
 
-```{r}
+
+```r
 medianstepsimputed<-median(as.numeric(dailysumimputed))
 ```
 
-The revised median daily total is `r medianstepsimputed`.
+The revised median daily total is 1.0766 &times; 10<sup>4</sup>.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 Finally an investigation was made in the difference in behaviour between weekdays and weekends:
 
-```{r}
+
+```r
 weekdayorend <- data.frame(sapply(dataimputed$date,FUN=function(x) { if ( isWeekday(x) ) {as.factor("Weekday") } else {as.factor("Weekend")}}))
 colnames(weekdayorend)<-"weekdayorend"
 dataimputed<-cbind(dataimputed,weekdayorend)
@@ -135,14 +165,15 @@ names(weekendfiveminutemean)[2]<-"fiveminutemean"
 names(weekendfiveminutemean)[3]<-"weekdayorend"
 
 dataimputed<-rbind(weekdayfiveminutemean,weekendfiveminutemean,deparse.level=0)
-
-
 ```
 
 The results are in the following plots:
 
-```{r}                           
+
+```r
 xyplot(fiveminutemean ~ interval | weekdayorend, data = dataimputed, layout = c(1, 2),type="l",ylab="interval average") 
 ```
+
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14.png) 
 
 
